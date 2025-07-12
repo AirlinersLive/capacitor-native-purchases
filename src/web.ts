@@ -1,6 +1,6 @@
 import { WebPlugin } from "@capacitor/core";
 
-import type { NativePurchasesPlugin, Product } from "./definitions";
+import type { NativePurchasesPlugin, Product, Transaction } from "./definitions";
 
 export class NativePurchasesWeb
   extends WebPlugin
@@ -26,19 +26,27 @@ export class NativePurchasesWeb
 
   async purchaseProduct(options: {
     productIdentifier: string;
-    planIdentifier: string;
-    quantity: number;
-  }): Promise<{ transactionId: string }> {
+    planIdentifier?: string;
+    quantity?: number;
+  }): Promise<Transaction> {
     console.error("purchaseProduct only mocked in web" + options);
-    return { transactionId: "transactionId" };
+    return {
+      transactionId: "mock-transaction-id",
+    };
   }
 
   async isBillingSupported(): Promise<{ isBillingSupported: boolean }> {
     console.error("isBillingSupported only mocked in web");
     return { isBillingSupported: false };
   }
+  
   async getPluginVersion(): Promise<{ version: string }> {
     console.warn("Cannot get plugin version in web");
     return { version: "default" };
+  }
+
+  async getLatestSignedTransaction(): Promise<{ jwt: string }> {
+    console.error("getLatestSignedTransaction only mocked in web");
+    return { jwt: "mock-jwt-token" };
   }
 }

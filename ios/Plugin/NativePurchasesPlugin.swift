@@ -16,7 +16,8 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "restorePurchases", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getProducts", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getProduct", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "getPluginVersion", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "getPluginVersion", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "getLatestSignedTransaction", returnType: CAPPluginReturnPromise)
     ]
 
     private let PLUGIN_VERSION = "0.0.25"
@@ -60,9 +61,54 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                     print("purchaseProduct result \(result)")
                     switch result {
                     case let .success(.verified(transaction)):
-                        // Successful purhcase
+                        // Successful purchase
                         await transaction.finish()
-                        call.resolve(["transactionId": transaction.id])
+                        
+                        // Get the signed transaction JWT
+                        let jwt = try await transaction.signedTransaction()
+                        
+                        // Create comprehensive transaction data
+                        var transactionData: [String: Any] = [
+                            "transactionId": transaction.id,
+                            "originalTransactionId": transaction.originalID,
+                            "productId": transaction.productID,
+                            "quantity": transaction.purchasedQuantity,
+                            "purchaseDate": transaction.purchaseDate.timeIntervalSince1970 * 1000, // Convert to milliseconds
+                            "originalPurchaseDate": transaction.originalPurchaseDate.timeIntervalSince1970 * 1000,
+                            "signedDate": transaction.signedDate.timeIntervalSince1970 * 1000,
+                            "transactionReason": transaction.reason.rawValue,
+                            "environment": transaction.environment.rawValue,
+                            "storefront": transaction.storefront,
+                            "storefrontId": transaction.storefrontID,
+                            "price": transaction.price?.doubleValue ?? 0,
+                            "currency": transaction.currency?.identifier ?? "",
+                            "subscriptionGroupId": transaction.subscriptionGroupID ?? "",
+                            "webOrderLineItemId": transaction.webOrderLineItemID ?? "",
+                            "appTransactionId": transaction.appTransactionID,
+                            "bundleId": transaction.appBundleID,
+                            "deviceVerification": transaction.deviceVerification?.base64EncodedString() ?? "",
+                            "deviceVerificationNonce": transaction.deviceVerificationNonce?.uuidString ?? "",
+                            "inAppOwnershipType": transaction.ownershipType.rawValue,
+                            "jwt": jwt
+                        ]
+                        
+                        // Add expiration date for subscriptions
+                        if let expirationDate = transaction.expirationDate {
+                            transactionData["expiresDate"] = expirationDate.timeIntervalSince1970 * 1000
+                        }
+                        
+                        // Add subscription type
+                        if transaction.productType == .autoRenewable {
+                            transactionData["type"] = "Auto-Renewable Subscription"
+                        } else if transaction.productType == .nonRenewable {
+                            transactionData["type"] = "Non-Renewable Subscription"  
+                        } else if transaction.productType == .consumable {
+                            transactionData["type"] = "Consumable"
+                        } else if transaction.productType == .nonConsumable {
+                            transactionData["type"] = "Non-Consumable"
+                        }
+                        
+                        call.resolve(transactionData)
                     case let .success(.unverified(_, error)):
                         // Successful purchase but transaction/receipt can't be verified
                         // Could be a jailbroken phone
@@ -161,6 +207,29 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
         } else {
             print("Not implemented under iOS 15")
             call.reject("Not implemented under iOS 15")
+        }
+    }
+
+    @objc func getLatestSignedTransaction(_ call: CAPPluginCall) {
+        if #available(iOS 15.0, *) {
+            Task {
+                do {
+                    let transactions = await Transaction.currentEntitlements
+                    // Filter or pick as needed; here is just the first
+                    if let transaction = transactions.first {
+                        let jwt = try await transaction.signedTransaction()
+                        call.resolve([
+                            "jwt": jwt
+                        ])
+                    } else {
+                        call.reject("No StoreKit 2 transactions found")
+                    }
+                } catch {
+                    call.reject("Failed to get signed transaction: \(error.localizedDescription)")
+                }
+            }
+        } else {
+            call.reject("StoreKit 2 is not available on this iOS version")
         }
     }
 

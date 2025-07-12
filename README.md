@@ -386,6 +386,7 @@ This approach balances immediate user gratification with proper server-side vali
 * [`getProduct(...)`](#getproduct)
 * [`isBillingSupported()`](#isbillingsupported)
 * [`getPluginVersion()`](#getpluginversion)
+* [`getLatestSignedTransaction()`](#getlatestsignedtransaction)
 * [Interfaces](#interfaces)
 * [Enums](#enums)
 
@@ -482,14 +483,49 @@ Get the native Capacitor plugin version
 --------------------
 
 
+### getLatestSignedTransaction()
+
+```typescript
+getLatestSignedTransaction() => Promise<{ jwt: string; }>
+```
+
+Get the latest signed transaction JWT token. iOS only.
+
+**Returns:** <code>Promise&lt;{ jwt: string; }&gt;</code>
+
+--------------------
+
+
 ### Interfaces
 
 
 #### Transaction
 
-| Prop                | Type                | Description                                  |
-| ------------------- | ------------------- | -------------------------------------------- |
-| **`transactionId`** | <code>string</code> | RevenueCat Id associated to the transaction. |
+| Prop                          | Type                | Description                                                                                    |
+| ----------------------------- | ------------------- | ---------------------------------------------------------------------------------------------- |
+| **`transactionId`**           | <code>string</code> | The unique transaction identifier.                                                             |
+| **`originalTransactionId`**   | <code>string</code> | The original transaction identifier (for renewals). iOS only.                                  |
+| **`productId`**               | <code>string</code> | <a href="#product">Product</a> identifier associated with the transaction.                     |
+| **`quantity`**                | <code>number</code> | Purchase quantity. iOS only.                                                                   |
+| **`purchaseDate`**            | <code>number</code> | Purchase date in milliseconds since epoch. iOS only.                                           |
+| **`originalPurchaseDate`**    | <code>number</code> | Original purchase date in milliseconds since epoch. iOS only.                                  |
+| **`signedDate`**              | <code>number</code> | <a href="#transaction">Transaction</a> signed date in milliseconds since epoch. iOS only.      |
+| **`transactionReason`**       | <code>string</code> | <a href="#transaction">Transaction</a> reason (PURCHASE, RENEWAL, etc.). iOS only.             |
+| **`environment`**             | <code>string</code> | App Store environment (Sandbox/Production). iOS only.                                          |
+| **`storefront`**              | <code>string</code> | App Store storefront. iOS only.                                                                |
+| **`storefrontId`**            | <code>string</code> | App Store storefront identifier. iOS only.                                                     |
+| **`price`**                   | <code>number</code> | <a href="#transaction">Transaction</a> price. iOS only.                                        |
+| **`currency`**                | <code>string</code> | Currency code. iOS only.                                                                       |
+| **`subscriptionGroupId`**     | <code>string</code> | Subscription group identifier (for subscriptions). iOS only.                                   |
+| **`webOrderLineItemId`**      | <code>string</code> | Web order line item identifier. iOS only.                                                      |
+| **`appTransactionId`**        | <code>string</code> | App transaction identifier. iOS only.                                                          |
+| **`bundleId`**                | <code>string</code> | App bundle identifier. iOS only.                                                               |
+| **`deviceVerification`**      | <code>string</code> | Device verification data. iOS only.                                                            |
+| **`deviceVerificationNonce`** | <code>string</code> | Device verification nonce. iOS only.                                                           |
+| **`inAppOwnershipType`**      | <code>string</code> | In-app ownership type (PURCHASED, FAMILY_SHARED, etc.). iOS only.                              |
+| **`jwt`**                     | <code>string</code> | Signed transaction JWT token. iOS only.                                                        |
+| **`expiresDate`**             | <code>number</code> | Expiration date for subscriptions (in milliseconds since epoch). iOS only.                     |
+| **`type`**                    | <code>string</code> | <a href="#product">Product</a> type (Auto-Renewable Subscription, Consumable, etc.). iOS only. |
 
 
 #### Product

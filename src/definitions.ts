@@ -143,17 +143,97 @@ export enum INTRO_ELIGIBILITY_STATUS {
 
 export interface Transaction {
   /**
-   * RevenueCat Id associated to the transaction.
+   * The unique transaction identifier.
    */
   readonly transactionId: string;
   /**
-   * Product Id associated with the transaction.
+   * The original transaction identifier (for renewals). iOS only.
    */
-  // readonly productIdentifier: string;
+  readonly originalTransactionId?: string;
   /**
-   * Purchase date of the transaction in ISO 8601 format.
+   * Product identifier associated with the transaction.
    */
-  // readonly purchaseDate: string;
+  readonly productId?: string;
+  /**
+   * Purchase quantity. iOS only.
+   */
+  readonly quantity?: number;
+  /**
+   * Purchase date in milliseconds since epoch. iOS only.
+   */
+  readonly purchaseDate?: number;
+  /**
+   * Original purchase date in milliseconds since epoch. iOS only.
+   */
+  readonly originalPurchaseDate?: number;
+  /**
+   * Transaction signed date in milliseconds since epoch. iOS only.
+   */
+  readonly signedDate?: number;
+  /**
+   * Transaction reason (PURCHASE, RENEWAL, etc.). iOS only.
+   */
+  readonly transactionReason?: string;
+  /**
+   * App Store environment (Sandbox/Production). iOS only.
+   */
+  readonly environment?: string;
+  /**
+   * App Store storefront. iOS only.
+   */
+  readonly storefront?: string;
+  /**
+   * App Store storefront identifier. iOS only.
+   */
+  readonly storefrontId?: string;
+  /**
+   * Transaction price. iOS only.
+   */
+  readonly price?: number;
+  /**
+   * Currency code. iOS only.
+   */
+  readonly currency?: string;
+  /**
+   * Subscription group identifier (for subscriptions). iOS only.
+   */
+  readonly subscriptionGroupId?: string;
+  /**
+   * Web order line item identifier. iOS only.
+   */
+  readonly webOrderLineItemId?: string;
+  /**
+   * App transaction identifier. iOS only.
+   */
+  readonly appTransactionId?: string;
+  /**
+   * App bundle identifier. iOS only.
+   */
+  readonly bundleId?: string;
+  /**
+   * Device verification data. iOS only.
+   */
+  readonly deviceVerification?: string;
+  /**
+   * Device verification nonce. iOS only.
+   */
+  readonly deviceVerificationNonce?: string;
+  /**
+   * In-app ownership type (PURCHASED, FAMILY_SHARED, etc.). iOS only.
+   */
+  readonly inAppOwnershipType?: string;
+  /**
+   * Signed transaction JWT token. iOS only.
+   */
+  readonly jwt?: string;
+  /**
+   * Expiration date for subscriptions (in milliseconds since epoch). iOS only.
+   */
+  readonly expiresDate?: number;
+  /**
+   * Product type (Auto-Renewable Subscription, Consumable, etc.). iOS only.
+   */
+  readonly type?: string;
 }
 
 export interface SubscriptionPeriod {
@@ -309,6 +389,7 @@ export interface NativePurchasesPlugin {
    *
    */
   isBillingSupported(): Promise<{ isBillingSupported: boolean }>;
+  
   /**
    * Get the native Capacitor plugin version
    *
@@ -316,4 +397,12 @@ export interface NativePurchasesPlugin {
    * @throws An error if the something went wrong
    */
   getPluginVersion(): Promise<{ version: string }>;
+
+  /**
+   * Get the latest signed transaction JWT token. iOS only.
+   *
+   * @returns {Promise<{ jwt: string }>} Promise with the JWT token
+   * @throws An error if no transactions found or StoreKit 2 not available
+   */
+  getLatestSignedTransaction(): Promise<{ jwt: string }>;
 }
