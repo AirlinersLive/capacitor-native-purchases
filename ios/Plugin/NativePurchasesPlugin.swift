@@ -64,8 +64,8 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                         // Successful purchase
                         await transaction.finish()
                         
-                        // Get the signed transaction JWT
-                        let jwt = try await transaction.signedTransaction()
+                        // Get the signed transaction JWT from the verification result
+                        let jwt = try await transaction.jwsRepresentation
                         
                         // Create comprehensive transaction data
                         var transactionData: [String: Any] = [
@@ -214,16 +214,22 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
         if #available(iOS 15.0, *) {
             Task {
                 do {
-                    let transactions = await Transaction.currentEntitlements
-                    // Filter or pick as needed; here is just the first
-                    if let transaction = transactions.first {
-                        let jwt = try await transaction.signedTransaction()
-                        call.resolve([
-                            "jwt": jwt
-                        ])
-                    } else {
-                        call.reject("No StoreKit 2 transactions found")
+                    // Get current entitlements
+                    for await result in Transaction.currentEntitlements {
+                        switch result {
+                        case let .verified(transaction):
+                            // Get the JWT representation
+                            let jwt = try await transaction.jwsRepresentation
+                            call.resolve([
+                                "jwt": jwt
+                            ])
+                            return
+                        case let .unverified(_, error):
+                            print("Unverified transaction: \(error)")
+                            continue
+                        }
                     }
+                    call.reject("No StoreKit 2 transactions found")
                 } catch {
                     call.reject("Failed to get signed transaction: \(error.localizedDescription)")
                 }
@@ -232,5 +238,4 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
             call.reject("StoreKit 2 is not available on this iOS version")
         }
     }
-
 }
