@@ -211,15 +211,14 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     @objc func getLatestSignedTransaction(_ call: CAPPluginCall) {
-        if #available(iOS 15.0, *) {
+        if #available(iOS 17.0, *) {
             Task {
                 do {
-                    // Get current entitlements
                     for await result in Transaction.currentEntitlements {
                         switch result {
                         case let .verified(transaction):
-                            // Get the JWT representation
-                            let jwt = try await transaction.jwsRepresentation
+                            // Get the JWT representation (iOS 17+)
+                            let jwt = try transaction.jwsRepresentation()
                             call.resolve([
                                 "jwt": jwt
                             ])
@@ -235,7 +234,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                 }
             }
         } else {
-            call.reject("StoreKit 2 is not available on this iOS version")
+            call.reject("StoreKit 2 JWT is only available on iOS 17+")
         }
     }
 }

@@ -48,8 +48,6 @@ extension Product {
                 unitString = "month"
             case .year:
                 unitString = "year"
-            @unknown default:
-                unitString = "unknown"
             }
             
             productDict["subscriptionPeriod"] = [
@@ -68,8 +66,6 @@ extension Product {
                 paymentModeString = "payUpFront"
             case .freeTrial:
                 paymentModeString = "freeTrial"
-            @unknown default:
-                paymentModeString = "unknown"
             }
             
             let unitString: String
@@ -82,8 +78,6 @@ extension Product {
                 unitString = "month"
             case .year:
                 unitString = "year"
-            @unknown default:
-                unitString = "unknown"
             }
             
             productDict["introductoryPrice"] = [
@@ -116,8 +110,6 @@ extension Product {
                     paymentModeString = "payUpFront"
                 case .freeTrial:
                     paymentModeString = "freeTrial"
-                @unknown default:
-                    paymentModeString = "unknown"
                 }
                 
                 let unitString: String
@@ -130,8 +122,6 @@ extension Product {
                     unitString = "month"
                 case .year:
                     unitString = "year"
-                @unknown default:
-                    unitString = "unknown"
                 }
                 
                 discounts.append([
