@@ -27,7 +27,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     @objc func isBillingSupported(_ call: CAPPluginCall) {
-        if #available(iOS 15, *) {
+        if #available(iOS 17, *) {
             call.resolve([
                 "isBillingSupported": true
             ])
@@ -39,7 +39,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     @objc func purchaseProduct(_ call: CAPPluginCall) {
-        if #available(iOS 15, *) {
+        if #available(iOS 17, *) {
             print("purchaseProduct")
             let productIdentifier = call.getString("productIdentifier", "")
             let quantity = call.getInt("quantity", 1)
@@ -65,7 +65,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                         await transaction.finish()
                         
                         // Get the signed transaction JWT from the verification result
-                        let jwt = try await transaction.jwsRepresentation
+                        let jwt = try await transaction.jwsRepresentation()
                         
                         // Create comprehensive transaction data
                         var transactionData: [String: Any] = [
@@ -120,8 +120,6 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                     case .userCancelled:
                         // ^^^
                         call.reject("User cancelled")
-                    @unknown default:
-                        call.reject("Unknown error")
                     }
                 } catch {
                     print(error)
@@ -135,7 +133,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     @objc func restorePurchases(_ call: CAPPluginCall) {
-        if #available(iOS 15.0, *) {
+        if #available(iOS 17.0, *) {
             print("restorePurchases")
             DispatchQueue.global().async {
                 Task {
@@ -158,7 +156,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     @objc func getProducts(_ call: CAPPluginCall) {
-        if #available(iOS 15.0, *) {
+        if #available(iOS 17.0, *) {
             let productIdentifiers = call.getArray("productIdentifiers", String.self) ?? []
             DispatchQueue.global().async {
                 Task {
@@ -181,7 +179,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     @objc func getProduct(_ call: CAPPluginCall) {
-        if #available(iOS 15.0, *) {
+        if #available(iOS 17.0, *) {
             let productIdentifier = call.getString("productIdentifier") ?? ""
             if productIdentifier.isEmpty {
                 call.reject("productIdentifier is empty")
@@ -218,7 +216,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                         switch result {
                         case let .verified(transaction):
                             // Get the JWT representation (iOS 17+)
-                            let jwt = try transaction.jwsRepresentation()
+                            let jwt = try await transaction.jwsRepresentation()
                             call.resolve([
                                 "jwt": jwt
                             ])
