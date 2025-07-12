@@ -66,6 +66,8 @@ extension Product {
                 paymentModeString = "payUpFront"
             case .freeTrial:
                 paymentModeString = "freeTrial"
+            default:
+                paymentModeString = "Unknown"
             }
             
             let unitString: String
