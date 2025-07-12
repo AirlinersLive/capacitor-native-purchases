@@ -2,10 +2,6 @@ import Foundation
 import Capacitor
 import StoreKit
 
-/**
- * Please read the Capacitor iOS Plugin Development Guide
- * here: https://capacitorjs.com/docs/plugins/ios
- */
 @objc(NativePurchasesPlugin)
 public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
     public let identifier = "NativePurchasesPlugin"
@@ -60,66 +56,51 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                     let result = try await product.purchase(options: purchaseOptions)
                     print("purchaseProduct result \(result)")
                     switch result {
-                    case let .success(.verified(transaction)):
-                        // Successful purchase
+                    case let .success(verificationResult):
+                        // This is VerificationResult<Transaction>
+                        let jwt = verificationResult.jwsRepresentation
+                        let transaction = try verificationResult.payloadValue
+
                         await transaction.finish()
-                        
-                        // Get the signed transaction JWT from the verification result
-                        let jwt = try await transaction.jwsRepresentation()
-                        
-                        // Create comprehensive transaction data
+
                         var transactionData: [String: Any] = [
                             "transactionId": transaction.id,
                             "originalTransactionId": transaction.originalID,
                             "productId": transaction.productID,
-                            "quantity": transaction.purchasedQuantity,
-                            "purchaseDate": transaction.purchaseDate.timeIntervalSince1970 * 1000, // Convert to milliseconds
+                            "purchaseDate": transaction.purchaseDate.timeIntervalSince1970 * 1000,
                             "originalPurchaseDate": transaction.originalPurchaseDate.timeIntervalSince1970 * 1000,
+                            "environment": transaction.environment.rawValue,
+                            "quantity": transaction.purchasedQuantity,
                             "signedDate": transaction.signedDate.timeIntervalSince1970 * 1000,
                             "transactionReason": transaction.reason.rawValue,
-                            "environment": transaction.environment.rawValue,
-                            "storefront": transaction.storefront,
-                            "storefrontId": transaction.storefrontID,
-                            "price": transaction.price?.doubleValue ?? 0,
+                            "price": transaction.price ?? 0,
                             "currency": transaction.currency?.identifier ?? "",
                             "subscriptionGroupId": transaction.subscriptionGroupID ?? "",
                             "webOrderLineItemId": transaction.webOrderLineItemID ?? "",
-                            "appTransactionId": transaction.appTransactionID,
+                            //"appTransactionId": transaction.appTransactionID,
                             "bundleId": transaction.appBundleID,
-                            "deviceVerification": transaction.deviceVerification?.base64EncodedString() ?? "",
-                            "deviceVerificationNonce": transaction.deviceVerificationNonce?.uuidString ?? "",
                             "inAppOwnershipType": transaction.ownershipType.rawValue,
                             "jwt": jwt
                         ]
-                        
-                        // Add expiration date for subscriptions
                         if let expirationDate = transaction.expirationDate {
                             transactionData["expiresDate"] = expirationDate.timeIntervalSince1970 * 1000
                         }
-                        
-                        // Add subscription type
                         if transaction.productType == .autoRenewable {
                             transactionData["type"] = "Auto-Renewable Subscription"
                         } else if transaction.productType == .nonRenewable {
-                            transactionData["type"] = "Non-Renewable Subscription"  
+                            transactionData["type"] = "Non-Renewable Subscription"
                         } else if transaction.productType == .consumable {
                             transactionData["type"] = "Consumable"
                         } else if transaction.productType == .nonConsumable {
                             transactionData["type"] = "Non-Consumable"
                         }
-                        
                         call.resolve(transactionData)
-                    case let .success(.unverified(_, error)):
-                        // Successful purchase but transaction/receipt can't be verified
-                        // Could be a jailbroken phone
-                        call.reject(error.localizedDescription)
                     case .pending:
-                        // Transaction waiting on SCA (Strong Customer Authentication) or
-                        // approval from Ask to Buy
                         call.reject("Transaction pending")
                     case .userCancelled:
-                        // ^^^
                         call.reject("User cancelled")
+                    @unknown default:
+                        call.reject("Unknown purchase result")
                     }
                 } catch {
                     print(error)
@@ -127,8 +108,8 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                 }
             }
         } else {
-            print("Not implemented under ios 15")
-            call.reject("Not implemented under ios 15")
+            print("Not implemented under iOS 17")
+            call.reject("Not implemented under iOS 17")
         }
     }
 
@@ -139,7 +120,6 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                 Task {
                     do {
                         try await AppStore.sync()
-                        // make finish() calls for all transactions and consume all consumables
                         for transaction in SKPaymentQueue.default().transactions {
                             SKPaymentQueue.default().finishTransaction(transaction)
                         }
@@ -150,8 +130,8 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                 }
             }
         } else {
-            print("Not implemented under ios 15")
-            call.reject("Not implemented under ios 15")
+            print("Not implemented under iOS 17")
+            call.reject("Not implemented under iOS 17")
         }
     }
 
@@ -173,8 +153,8 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                 }
             }
         } else {
-            print("Not implemented under ios 15")
-            call.reject("Not implemented under ios 15")
+            print("Not implemented under iOS 17")
+            call.reject("Not implemented under iOS 17")
         }
     }
 
@@ -203,8 +183,8 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                 }
             }
         } else {
-            print("Not implemented under iOS 15")
-            call.reject("Not implemented under iOS 15")
+            print("Not implemented under iOS 17")
+            call.reject("Not implemented under iOS 17")
         }
     }
 
@@ -212,19 +192,16 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
         if #available(iOS 17.0, *) {
             Task {
                 do {
-                    for await result in Transaction.currentEntitlements {
-                        switch result {
-                        case let .verified(transaction):
-                            // Get the JWT representation (iOS 17+)
-                            let jwt = try await transaction.jwsRepresentation()
-                            call.resolve([
-                                "jwt": jwt
-                            ])
-                            return
-                        case let .unverified(_, error):
-                            print("Unverified transaction: \(error)")
-                            continue
-                        }
+                    for await verificationResult in Transaction.currentEntitlements {
+                        let jwt = verificationResult.jwsRepresentation
+                        let transaction = try verificationResult.payloadValue
+                        var transactionData: [String: Any] = [
+                            "transactionId": transaction.id,
+                            // ... (add any other fields you want) ...
+                            "jwt": jwt
+                        ]
+                        call.resolve(transactionData)
+                        return
                     }
                     call.reject("No StoreKit 2 transactions found")
                 } catch {
@@ -236,3 +213,4 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
         }
     }
 }
+
