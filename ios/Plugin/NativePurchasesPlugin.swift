@@ -40,8 +40,13 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
         if #available(iOS 15.0, *) {
             Task {
                 do {
-                    try await AppStore.showManageSubscriptions(in: UIApplication.shared.windows.first?.rootViewController?.view.window ?? UIWindow())
-                    call.resolve()
+                    // Get the current window scene properly for iOS 13+
+                    if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                        try await AppStore.showManageSubscriptions(in: windowScene)
+                        call.resolve()
+                    } else {
+                        call.reject("Unable to get window scene")
+                    }
                 } catch {
                     call.reject("Failed to show manage subscriptions: \(error.localizedDescription)")
                 }
