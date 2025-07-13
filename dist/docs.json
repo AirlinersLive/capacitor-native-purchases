@@ -7,12 +7,14 @@
     "methods": [
       {
         "name": "restorePurchases",
-        "signature": "() => Promise<void>",
+        "signature": "() => Promise<{ transactions: Transaction[]; }>",
         "parameters": [],
-        "returns": "Promise<void>",
+        "returns": "Promise<{ transactions: Transaction[]; }>",
         "tags": [],
         "docs": "Restores a user's previous  and links their appUserIDs to any user's also using those .",
-        "complexTypes": [],
+        "complexTypes": [
+          "Transaction"
+        ],
         "slug": "restorepurchases"
       },
       {

@@ -6,8 +6,9 @@ export class NativePurchasesWeb
   extends WebPlugin
   implements NativePurchasesPlugin
 {
-  async restorePurchases(): Promise<void> {
+  async restorePurchases(): Promise<{ transactions: Transaction[] }> {
     console.error("restorePurchases only mocked in web");
+    return { transactions: [] };
   }
 
   async getProducts(options: {

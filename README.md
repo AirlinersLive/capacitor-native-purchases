@@ -398,10 +398,12 @@ This approach balances immediate user gratification with proper server-side vali
 ### restorePurchases()
 
 ```typescript
-restorePurchases() => Promise<void>
+restorePurchases() => Promise<{ transactions: Transaction[]; }>
 ```
 
 Restores a user's previous  and links their appUserIDs to any user's also using those .
+
+**Returns:** <code>Promise&lt;{ transactions: Transaction[]; }&gt;</code>
 
 --------------------
 

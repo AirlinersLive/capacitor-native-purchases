@@ -136,6 +136,7 @@ var capacitorNativePurchases = (function (exports, core) {
     class NativePurchasesWeb extends core.WebPlugin {
         async restorePurchases() {
             console.error("restorePurchases only mocked in web");
+            return { transactions: [] };
         }
         async getProducts(options) {
             console.error("getProducts only mocked in web " + options);

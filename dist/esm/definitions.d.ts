@@ -315,7 +315,9 @@ export interface NativePurchasesPlugin {
     /**
      * Restores a user's previous  and links their appUserIDs to any user's also using those .
      */
-    restorePurchases(): Promise<void>;
+    restorePurchases(): Promise<{
+        transactions: Transaction[];
+    }>;
     /**
      * Started purchase process for the given product.
      *

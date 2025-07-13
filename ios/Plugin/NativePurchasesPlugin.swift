@@ -116,17 +116,72 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
     @objc func restorePurchases(_ call: CAPPluginCall) {
         if #available(iOS 17.0, *) {
             print("restorePurchases")
-            DispatchQueue.global().async {
-                Task {
-                    do {
-                        try await AppStore.sync()
-                        for transaction in SKPaymentQueue.default().transactions {
-                            SKPaymentQueue.default().finishTransaction(transaction)
+            Task {
+                do {
+                    try await AppStore.sync()
+                    
+                    var restoredTransactions: [[String: Any]] = []
+                    
+                    // Get all current entitlements (restored transactions)
+                    for await verificationResult in Transaction.currentEntitlements {
+                        switch verificationResult {
+                        case let .verified(transaction):
+                            let jwt = verificationResult.jwsRepresentation
+                            
+                            var transactionData: [String: Any] = [
+                                "transactionId": transaction.id,
+                                "originalTransactionId": transaction.originalID,
+                                "productId": transaction.productID,
+                                "purchaseDate": transaction.purchaseDate.timeIntervalSince1970 * 1000,
+                                "originalPurchaseDate": transaction.originalPurchaseDate.timeIntervalSince1970 * 1000,
+                                "environment": transaction.environment.rawValue,
+                                "quantity": transaction.purchasedQuantity,
+                                "signedDate": transaction.signedDate.timeIntervalSince1970 * 1000,
+                                "transactionReason": transaction.reason.rawValue,
+                                "price": transaction.price ?? 0,
+                                "currency": transaction.currency?.identifier ?? "",
+                                "subscriptionGroupId": transaction.subscriptionGroupID ?? "",
+                                "webOrderLineItemId": transaction.webOrderLineItemID ?? "",
+                                "bundleId": transaction.appBundleID,
+                                "inAppOwnershipType": transaction.ownershipType.rawValue,
+                                "jwt": jwt
+                            ]
+                            
+                            // Add expiration date for subscriptions
+                            if let expirationDate = transaction.expirationDate {
+                                transactionData["expiresDate"] = expirationDate.timeIntervalSince1970 * 1000
+                            }
+                            
+                            // Add product type
+                            if transaction.productType == .autoRenewable {
+                                transactionData["type"] = "Auto-Renewable Subscription"
+                            } else if transaction.productType == .nonRenewable {
+                                transactionData["type"] = "Non-Renewable Subscription"
+                            } else if transaction.productType == .consumable {
+                                transactionData["type"] = "Consumable"
+                            } else if transaction.productType == .nonConsumable {
+                                transactionData["type"] = "Non-Consumable"
+                            }
+                            
+                            restoredTransactions.append(transactionData)
+                            
+                        case let .unverified(_, error):
+                            print("Unverified transaction during restore: \(error)")
+                            continue
                         }
-                        call.resolve()
-                    } catch {
-                        call.reject(error.localizedDescription)
                     }
+                    
+                    // Finish any legacy transactions
+                    for transaction in SKPaymentQueue.default().transactions {
+                        SKPaymentQueue.default().finishTransaction(transaction)
+                    }
+                    
+                    call.resolve([
+                        "transactions": restoredTransactions
+                    ])
+                    
+                } catch {
+                    call.reject(error.localizedDescription)
                 }
             }
         } else {

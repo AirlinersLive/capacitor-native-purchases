@@ -1,7 +1,9 @@
 import { WebPlugin } from "@capacitor/core";
 import type { NativePurchasesPlugin, Product, Transaction } from "./definitions";
 export declare class NativePurchasesWeb extends WebPlugin implements NativePurchasesPlugin {
-    restorePurchases(): Promise<void>;
+    restorePurchases(): Promise<{
+        transactions: Transaction[];
+    }>;
     getProducts(options: {
         productIdentifiers: string[];
     }): Promise<{

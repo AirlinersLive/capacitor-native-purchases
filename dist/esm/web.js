@@ -2,6 +2,7 @@ import { WebPlugin } from "@capacitor/core";
 export class NativePurchasesWeb extends WebPlugin {
     async restorePurchases() {
         console.error("restorePurchases only mocked in web");
+        return { transactions: [] };
     }
     async getProducts(options) {
         console.error("getProducts only mocked in web " + options);
