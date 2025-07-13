@@ -13,7 +13,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "getProducts", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getProduct", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getPluginVersion", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "getLatestSignedTransaction", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "getLatestSignedTransaction", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "showManageSubscriptions", returnType: CAPPluginReturnPromise)
 
     ]
