@@ -387,4 +387,5 @@ export interface NativePurchasesPlugin {
     getLatestSignedTransaction(): Promise<{
         jwt: string;
     }>;
+    showManageSubscriptions(): Promise<void>;
 }

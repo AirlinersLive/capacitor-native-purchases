@@ -406,4 +406,6 @@ export interface NativePurchasesPlugin {
    * @throws An error if no transactions found or StoreKit 2 not available
    */
   getLatestSignedTransaction(): Promise<{ jwt: string }>;
+
+  showManageSubscriptions(): Promise<void>;
 }

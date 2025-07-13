@@ -14,6 +14,8 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "getProduct", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getPluginVersion", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getLatestSignedTransaction", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "showManageSubscriptions", returnType: CAPPluginReturnPromise)
+
     ]
 
     private let PLUGIN_VERSION = "0.0.25"
@@ -31,6 +33,21 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
             call.resolve([
                 "isBillingSupported": false
             ])
+        }
+    }
+
+    @objc func showManageSubscriptions(_ call: CAPPluginCall) {
+        if #available(iOS 15.0, *) {
+            Task {
+                do {
+                    try await AppStore.showManageSubscriptions(in: UIApplication.shared.windows.first?.rootViewController?.view.window ?? UIWindow())
+                    call.resolve()
+                } catch {
+                    call.reject("Failed to show manage subscriptions: \(error.localizedDescription)")
+                }
+            }
+        } else {
+            call.reject("showManageSubscriptions is only available on iOS 15+")
         }
     }
 

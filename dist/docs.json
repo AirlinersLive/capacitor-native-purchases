@@ -176,6 +176,16 @@
         "docs": "Get the latest signed transaction JWT token. iOS only.",
         "complexTypes": [],
         "slug": "getlatestsignedtransaction"
+      },
+      {
+        "name": "showManageSubscriptions",
+        "signature": "() => Promise<void>",
+        "parameters": [],
+        "returns": "Promise<void>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [],
+        "slug": "showmanagesubscriptions"
       }
     ],
     "properties": []

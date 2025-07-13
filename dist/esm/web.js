@@ -30,5 +30,10 @@ export class NativePurchasesWeb extends WebPlugin {
         console.error("getLatestSignedTransaction only mocked in web");
         return { jwt: "mock-jwt-token" };
     }
+    async showManageSubscriptions() {
+        console.error("showManageSubscriptions only mocked in web");
+        // In web, you could redirect to your web subscription management page
+        // window.open('https://your-app.com/manage-subscriptions', '_blank');
+    }
 }
 //# sourceMappingURL=web.js.map

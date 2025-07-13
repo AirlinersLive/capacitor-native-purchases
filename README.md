@@ -387,6 +387,7 @@ This approach balances immediate user gratification with proper server-side vali
 * [`isBillingSupported()`](#isbillingsupported)
 * [`getPluginVersion()`](#getpluginversion)
 * [`getLatestSignedTransaction()`](#getlatestsignedtransaction)
+* [`showManageSubscriptions()`](#showmanagesubscriptions)
 * [Interfaces](#interfaces)
 * [Enums](#enums)
 
@@ -494,6 +495,15 @@ getLatestSignedTransaction() => Promise<{ jwt: string; }>
 Get the latest signed transaction JWT token. iOS only.
 
 **Returns:** <code>Promise&lt;{ jwt: string; }&gt;</code>
+
+--------------------
+
+
+### showManageSubscriptions()
+
+```typescript
+showManageSubscriptions() => Promise<void>
+```
 
 --------------------
 

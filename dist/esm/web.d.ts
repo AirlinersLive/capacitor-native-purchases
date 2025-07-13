@@ -28,4 +28,5 @@ export declare class NativePurchasesWeb extends WebPlugin implements NativePurch
     getLatestSignedTransaction(): Promise<{
         jwt: string;
     }>;
+    showManageSubscriptions(): Promise<void>;
 }
